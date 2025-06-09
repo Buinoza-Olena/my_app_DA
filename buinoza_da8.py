@@ -68,7 +68,7 @@ chart_option = st.sidebar.radio(
     [
         "Залежність змінних (scatter + тренд)",
         "Профіль департаменту (радар)",
-        "Середній показник по роках у компанії"
+        "Розподіл працівників"
     ]
 )
 
@@ -118,18 +118,36 @@ if chart_option == "Залежність змінних (scatter + тренд)":
 
 elif chart_option == "Профіль департаменту (радар)":
     st.subheader("📊 Профіль департаменту")
-    metrics = ["satisfaction_level", "last_evaluation", "average_monthly_hours", "time_spend_company"]
-    dept_avg = filtered[metrics].mean()
-    all_avg = df[metrics].mean()
-    radar_df = pd.DataFrame({
-        "Метрика": metrics * 2,
-        "Значення": list(dept_avg) + list(all_avg),
-        "Група": ["Департамент"] * len(metrics) + ["Загалом"] * len(metrics)
-    })
-    fig = px.line_polar(radar_df, r="Значення", theta="Метрика", color="Група", line_close=True)
-    st.plotly_chart(fig, use_container_width=True)
 
-elif chart_option == "Середній показник по роках у компанії":
+    # 1. KPI / табло
+    col1, col2, col3, col4 = st.columns(4)
+
+    total = len(filtered)
+    left = filtered["left"].sum()
+    turnover = left / total * 100 if total > 0 else 0
+    satisfaction = filtered["satisfaction_level"].mean()
+
+    col1.metric("👥 Працівників", total)
+    col2.metric("📤 Звільнено", int(left))
+    col3.metric("📉 Плинність кадрів", f"{turnover:.1f}%")
+    col4.metric("😊 Задоволення", f"{satisfaction:.2f}")
+
+    # 2. Графік: кількість проєктів
+    st.subheader("📌 Розподіл працівників за кількістю проєктів")
+    proj_counts = filtered["number_project"].value_counts().sort_index().reset_index()
+    proj_counts.columns = ["Кількість проєктів", "Працівників"]
+    fig_proj = px.bar(proj_counts, x="Кількість проєктів", y="Працівників", text="Працівників")
+    fig_proj.update_layout(xaxis_title="Кількість проєктів", yaxis_title="Кількість працівників")
+    st.plotly_chart(fig_proj, use_container_width=True)
+
+    # 3. Графік: розподіл середніх годин
+    st.subheader("⏱ Розподіл середніх годин на місяць")
+    fig_hours = px.histogram(filtered, x="average_monthly_hours", nbins=20)
+    fig_hours.update_layout(xaxis_title="Середні години на місяць", yaxis_title="Кількість працівників")
+    st.plotly_chart(fig_hours, use_container_width=True)
+
+
+elif chart_option == "Розподіл працівників":
     st.subheader("📊 Розподіл працівників за департаментами")
     dept_share = filtered["Department"].value_counts(normalize=True).reset_index()
     dept_share.columns = ["Департамент", "Частка"]
