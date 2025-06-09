@@ -59,10 +59,12 @@ st.sidebar.markdown("🔍 **Фільтруйте працівників за к�
 st.sidebar.markdown("Цей дашборд допомагає дослідити задоволеність, навантаження та ризики звільнень по департаментах.")
 
 # 1. Вибір одного департаменту
-selected_department = st.sidebar.selectbox(
-    "Оберіть департамент:",
-    sorted(df["Department"].unique())
+selected_departments = st.sidebar.multiselect(
+    "Оберіть департаменти:",
+    options=sorted(df["Department"].unique()),
+    default=sorted(df["Department"].unique())
 )
+
 
 # 2. Вибір кількох рівнів зарплати
 selected_salary = st.sidebar.multiselect(
@@ -106,7 +108,8 @@ st.sidebar.markdown("👩‍💻 **Автор**: Буйноза Олена :)")
 
 # Створюємо df_filtered за вибраними параметрами
 df_filtered = df[
-    (df["Department"] == selected_department) &
+    (df["Department"].isin(selected_departments))
+ &
     (df["salary"].isin(selected_salary)) &
     (
         (status_filter == "Усі") |
