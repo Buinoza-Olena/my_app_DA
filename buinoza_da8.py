@@ -27,6 +27,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
 
 df = pd.read_csv('HR_comma_sep.csv')
+df.rename(columns={"average_montly_hours": "average_monthly_hours"}, inplace=True)
 
 df.info()
 
