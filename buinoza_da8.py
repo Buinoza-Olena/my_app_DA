@@ -174,9 +174,6 @@ else:
     fig.update_layout(bargap=0.1)
     st.plotly_chart(fig, use_container_width=True)
 
-
-
-elif chart_option == "Розподіл працівників":
     st.subheader("📊 Розподіл працівників за департаментами")
     dept_share = filtered["Department"].value_counts(normalize=True).reset_index()
     dept_share.columns = ["Департамент", "Частка"]
