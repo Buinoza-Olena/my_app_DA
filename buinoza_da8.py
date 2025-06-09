@@ -107,24 +107,13 @@ else:
     st.info("Оберіть хоча б один стовпець, щоб побачити таблицю.")
 
 # Графіки
-if chart_option == "Залежність змінних (scatter + тренд)":
-    st.subheader("📊 Залежність між змінними")
-    
-    x = st.selectbox("Оберіть змінну X:", filtered.select_dtypes(include=np.number).columns)
-    y = st.selectbox("Оберіть змінну Y:", filtered.select_dtypes(include=np.number).columns)
+# Блок регресії
+st.sidebar.markdown("Побудова регресії")
+numeric_columns = df_filtered.select_dtypes(include=np.number).columns.tolist()
 
-    df_reg = filtered[[x, y]].dropna()
-
-    if len(df_reg) >= 2:
-        from sklearn.linear_model import LinearRegression
-
-        model = LinearRegression()
-        model.fit(df_reg[[x]], df_reg[y])
-        y_pred = model.predict(df_reg[[x]])
-
-        fig = px.scatter(df_reg, x=x, y=y, title=f"Залежність: {y} ~ {x}")
-        fig.add_scatter(x=df_reg[x], y=y_pred, mode='lines', name='Регресія', line=dict(color='red'))
-        st.plotly_chart(fig, use_container_width=True)
+reg_x = st.sidebar.selectbox("Оберіть змінну X", numeric_columns, index=0)
+reg_y = st.sidebar.selectbox("Оберіть змінну Y", numeric_columns, index=1)
+show_regression = st.sidebar.checkbox("Показати регресійну модель")
 
 elif chart_option == "Огляд департаменту/ів":
     st.subheader("Огляд департаменту/ів")
