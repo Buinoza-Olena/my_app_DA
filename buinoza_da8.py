@@ -11,8 +11,6 @@ Original file is located at
 <center><b> Створення дашборду за допомогою Streamlit </font>
 """
 
-# Завантажимо Streamlit (не додавати в .py файл додатку)
-!pip install streamlit
 
 import streamlit as st
 import pandas as pd
