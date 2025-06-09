@@ -120,26 +120,26 @@ elif chart_option == "Профіль департаменту (радар)":
     st.subheader("📊 Профіль департаменту")
 
    # Розрахунок метрик
-total_employees = len(filtered)
-left_employees = filtered["left"].sum()
-turnover_rate = (left_employees / total_employees) * 100 if total_employees else 0
-avg_satisfaction = filtered["satisfaction_level"].mean()
-avg_projects = filtered["number_project"].mean()
-avg_hours = filtered["average_monthly_hours"].mean()
-
-# Виведення в колонках
-st.subheader("📊 Основні показники працівників")
-
-col1, col2, col3 = st.columns(3)
-with col1:
-    st.metric("👥 Загальна кількість", total_employees)
-    st.metric("📌 Кількість проєктів", f"{avg_projects:.2f}")
-with col2:
-    st.metric("👋 Звільнилося", left_employees)
-    st.metric("⏱ Середні години/міс", f"{avg_hours:.1f}")
-with col3:
-    st.metric("📉 Рівень плинності", f"{turnover_rate:.1f}%")
-    st.metric("😊 Задоволеність", f"{avg_satisfaction:.2f}")
+    total_employees = len(filtered)
+    left_employees = filtered["left"].sum()
+    turnover_rate = (left_employees / total_employees) * 100 if total_employees else 0
+    avg_satisfaction = filtered["satisfaction_level"].mean()
+    avg_projects = filtered["number_project"].mean()
+    avg_hours = filtered["average_monthly_hours"].mean()
+    
+    # Виведення в колонках
+    st.subheader("📊 Основні показники працівників")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("👥 Загальна кількість", total_employees)
+        st.metric("📌 Кількість проєктів", f"{avg_projects:.2f}")
+    with col2:
+        st.metric("👋 Звільнилося", left_employees)
+        st.metric("⏱ Середні години/міс", f"{avg_hours:.1f}")
+    with col3:
+        st.metric("📉 Рівень плинності", f"{turnover_rate:.1f}%")
+        st.metric("😊 Задоволеність", f"{avg_satisfaction:.2f}")
 
 
 
