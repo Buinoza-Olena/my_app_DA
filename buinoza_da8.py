@@ -11,7 +11,6 @@ Original file is located at
 <center><b> Створення дашборду за допомогою Streamlit </font>
 """
 
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -22,23 +21,14 @@ import plotly.express as px
 import altair as alt
 
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
 
+# Завантаження даних
 df = pd.read_csv('HR_comma_sep.csv')
 df.rename(columns={"average_montly_hours": "average_monthly_hours"}, inplace=True)
 
-df.info()
-
-df.describe()
-
-missing_data = df.isnull()
-for column in missing_data.columns.values.tolist():
-    print(column)
-    print (missing_data[column].value_counts())
-    print("")
-
+# Налаштування сторінки
 st.set_page_config(
     page_title="HR Insight Dashboard",
     page_icon="🧠",
@@ -53,46 +43,26 @@ st.set_page_config(
 
 # Бічна панель / SIDEBAR
 st.sidebar.title("Панель фільтрації")
-
-# Інформаційний опис
 st.sidebar.markdown("🔍 **Фільтруйте працівників за ключовими ознаками:**")
 st.sidebar.markdown("Цей дашборд допомагає дослідити задоволеність, навантаження та ризики звільнень по департаментах.")
 
-# 1. Вибір одного департаменту
 selected_departments = st.sidebar.multiselect(
     "Оберіть департаменти:",
     options=sorted(df["Department"].unique()),
     default=sorted(df["Department"].unique())
 )
 
-
-# 2. Вибір кількох рівнів зарплати
 salary_options = ["Усі"] + sorted(df["salary"].unique())
-selected_salary = st.sidebar.selectbox(
-    "Рівень зарплати:",
-    options=salary_options
-)
+selected_salary = st.sidebar.selectbox("Рівень зарплати:", salary_options)
 
+status_options = ["Працює", "Звільнився"]
+status_filter = st.sidebar.multiselect("Статус працівника:", status_options, default=status_options)
 
-# 3. Радіо-кнопки: статус працівника
-status_filter = st.sidebar.radio(
-    "Статус працівника:",
-    ["Усі", "Працює", "Звільнився"]
-)
-
-# 4. Прапорець: тільки без нещасних випадків
 filter_accident_free = st.sidebar.checkbox("🩺 Лише без нещасних випадків")
 
-# 5. Слайдер: обмежити стаж
 max_years = int(df["time_spend_company"].max())
-selected_years = st.sidebar.slider(
-    "Максимальний стаж (роки в компанії):",
-    min_value=1,
-    max_value=max_years,
-    value=max_years
-)
+selected_years = st.sidebar.slider("Максимальний стаж (роки в компанії):", 1, max_years, max_years)
 
-# 6. Вибір типу графіка
 chart_option = st.sidebar.radio(
     "📊 Оберіть графік для перегляду:",
     [
@@ -102,169 +72,102 @@ chart_option = st.sidebar.radio(
     ]
 )
 
-# Автор і інструкція
 st.sidebar.markdown("---")
 st.sidebar.markdown("**Інструкція:** \nОберіть фільтри, щоб переглянути статистику департаменту та ймовірність звільнення працівників.")
 st.sidebar.markdown("👩‍💻 **Автор**: Буйноза Олена :)")
 
-# Створюємо df_filtered за вибраними параметрами
-df_filtered = df[
-    (df["Department"].isin(selected_departments))
- &
-    (True if selected_salary == "Усі" else df["salary"] == selected_salary)
- &
-    (
-        (status_filter == "Усі") |
-        ((status_filter == "Працює") & (df["left"] == 0)) |
-        ((status_filter == "Звільнився") & (df["left"] == 1))
-    ) &
+# Фільтрація
+filtered = df[
+    df["Department"].isin(selected_departments) &
+    ((df["salary"] == selected_salary) if selected_salary != "Усі" else True) &
+    (df["left"].isin([0 if s == "Працює" else 1 for s in status_filter])) &
     ((df["Work_accident"] == 0) if filter_accident_free else True) &
     (df["time_spend_company"] <= selected_years)
 ]
 
-# Виведемо розмір фільтрованого датасету (опційно)
-st.write(f"📋 Відфільтровано {len(df_filtered)} записів.")
-
-
-# Блок класифікації
-st.sidebar.markdown("🔬 **Побудова моделі класифікації**")
-st.sidebar.markdown("Оберіть ознаки, за якими модель прогнозуватиме, чи працівник звільниться.")
-
-# Обираємо лише числові колонки, окрім 'left'
-numeric_columns = df_filtered.select_dtypes(include=np.number).columns.tolist()
-if 'left' in numeric_columns:
-    numeric_columns.remove('left')  # бо це ціль
-
-# Вибір змінних для моделі
-selected_features = st.sidebar.multiselect(
-    "Ознаки для моделі (X):",
-    options=numeric_columns,
-    default=["satisfaction_level", "last_evaluation"]
-)
-
-# Кнопка побудови моделі
-build_model = st.sidebar.checkbox("🔍 Побудувати модель класифікації")
-
-# Основна панель
-
 st.title("📊 HR Insight Dashboard")
-st.subheader(f"🔍 Відфільтровано {df_filtered.shape[0]} працівників")
+st.subheader(f"🔍 Відфільтровано {len(filtered)} працівників")
 
-# Кнопка завантаження CSV
-csv = df_filtered.to_csv(index=False).encode("utf-8")
-st.download_button(
-    label="⬇️ Завантажити CSV",
-    data=csv,
-    file_name="filtered_employees.csv",
-    mime="text/csv"
-)
+csv = filtered.to_csv(index=False).encode("utf-8")
+st.download_button("⬇️ Завантажити CSV", csv, "filtered_employees.csv", "text/csv")
 
-# Інтерактивна таблиця
+# Таблиця
 st.subheader("Оберіть, які стовпці таблиці відображати")
+all_columns = filtered.columns.tolist()
+def_columns = ["Department", "salary", "satisfaction_level", "last_evaluation", "average_monthly_hours", "time_spend_company", "left"]
+selected_cols = st.multiselect("Оберіть стовпці для перегляду:", all_columns, default=[c for c in def_columns if c in all_columns])
 
-all_columns = df_filtered.columns.tolist()
-default_columns = [
-    "Department", "salary", "satisfaction_level",
-    "last_evaluation", "average_monthly_hours",
-    "time_spend_company", "left"
-]
-
-selected_columns = st.multiselect(
-    "Оберіть стовпці для перегляду:",
-    options=all_columns,
-    default=[col for col in default_columns if col in all_columns]
-)
-
-if selected_columns:
-    st.dataframe(df_filtered[selected_columns])
+if selected_cols:
+    st.dataframe(filtered[selected_cols])
 else:
     st.info("Оберіть хоча б один стовпець, щоб побачити таблицю.")
 
-
-
 # Графіки
-
 if chart_option == "Залежність змінних (scatter + тренд)":
     st.subheader("📊 Залежність між двома змінними")
-
-    x_var = st.selectbox("Оберіть змінну для осі X:", df_filtered.select_dtypes(include=np.number).columns)
-    y_var = st.selectbox("Оберіть змінну для осі Y:", df_filtered.select_dtypes(include=np.number).columns)
-
-    fig = px.scatter(df_filtered, x=x_var, y=y_var, color=df_filtered["left"].map({0: "Працює", 1: "Звільнився"}))
+    x = st.selectbox("Оберіть змінну для осі X:", filtered.select_dtypes(include=np.number).columns)
+    y = st.selectbox("Оберіть змінну для осі Y:", filtered.select_dtypes(include=np.number).columns)
+    fig = px.scatter(filtered, x=x, y=y, color=filtered["left"].map({0: "Працює", 1: "Звільнився"}))
     fig.update_traces(marker=dict(size=8))
-    fig.update_layout(title=f"Залежність {y_var} від {x_var}", legend_title="Статус")
+    fig.update_layout(title=f"Залежність {y} від {x}", legend_title="Статус")
     st.plotly_chart(fig, use_container_width=True)
 
 elif chart_option == "Профіль департаменту (радар)":
     st.subheader("📊 Профіль департаменту")
-
-    radar_metrics = ["satisfaction_level", "last_evaluation", "average_monthly_hours", "time_spend_company"]
-    dept_data = df_filtered[radar_metrics].mean()
-    overall_data = df[radar_metrics].mean()
-
-    # Об'єднання у довгий формат
+    metrics = ["satisfaction_level", "last_evaluation", "average_monthly_hours", "time_spend_company"]
+    dept_avg = filtered[metrics].mean()
+    all_avg = df[metrics].mean()
     radar_df = pd.DataFrame({
-        "Метрика": radar_metrics * 2,
-        "Значення": list(dept_data) + list(overall_data),
-        "Група": ["Департамент"] * len(radar_metrics) + ["Загалом"] * len(radar_metrics)
+        "Метрика": metrics * 2,
+        "Значення": list(dept_avg) + list(all_avg),
+        "Група": ["Департамент"] * len(metrics) + ["Загалом"] * len(metrics)
     })
-
-    fig = px.line_polar(
-        radar_df,
-        r="Значення",
-        theta="Метрика",
-        color="Група",
-        line_close=True
-    )
-
+    fig = px.line_polar(radar_df, r="Значення", theta="Метрика", color="Група", line_close=True)
     st.plotly_chart(fig, use_container_width=True)
-
 
 elif chart_option == "Середній показник по роках у компанії":
     st.subheader("📊 Розподіл працівників за департаментами")
-    dept_counts = df_filtered["Department"].value_counts(normalize=True).reset_index()
-    dept_counts.columns = ["Департамент", "Частка"]
-    fig1 = px.pie(dept_counts, values="Частка", names="Департамент", title="Частка працівників по департаментах", hole=0.4)
+    dept_share = filtered["Department"].value_counts(normalize=True).reset_index()
+    dept_share.columns = ["Департамент", "Частка"]
+    fig1 = px.pie(dept_share, values="Частка", names="Департамент", title="Частка по департаментах", hole=0.4)
     st.plotly_chart(fig1, use_container_width=True)
 
     st.subheader("💰 Розподіл працівників за рівнем зарплати")
-    salary_counts = df_filtered["salary"].value_counts(normalize=True).reset_index()
-    salary_counts.columns = ["Рівень зарплати", "Частка"]
-    fig2 = px.pie(salary_counts, values="Частка", names="Рівень зарплати", title="Частка працівників по зарплатах", hole=0.4)
+    sal_share = filtered["salary"].value_counts(normalize=True).reset_index()
+    sal_share.columns = ["Рівень зарплати", "Частка"]
+    fig2 = px.pie(sal_share, values="Частка", names="Рівень зарплати", title="Частка по зарплаті", hole=0.4)
     st.plotly_chart(fig2, use_container_width=True)
 
+# Класифікаційна модель
+st.sidebar.markdown("🔬 **Побудова моделі класифікації**")
+st.sidebar.markdown("Оберіть ознаки, за якими модель прогнозуватиме, чи працівник звільниться.")
 
-# Побудова класифікаційної моделі
+numeric_cols = filtered.select_dtypes(include=np.number).columns.tolist()
+if "left" in numeric_cols:
+    numeric_cols.remove("left")
+selected_features = st.sidebar.multiselect("Ознаки для моделі (X):", options=numeric_cols, default=["satisfaction_level", "last_evaluation"])
+build_model = st.sidebar.checkbox("🔍 Побудувати модель класифікації")
+
 if build_model:
     st.subheader("🔍 Класифікація: прогноз ймовірності звільнення")
-
-    if selected_features and "left" in df_filtered.columns:
-        df_model = df_filtered[selected_features + ["left"]].dropna()
-
-        if df_model.shape[0] >= 10:
-            # Формування X та y
+    if selected_features and "left" in filtered.columns:
+        df_model = filtered[selected_features + ["left"]].dropna()
+        if len(df_model) >= 10:
             X = df_model[selected_features]
             y = df_model["left"]
-
-            # Розділення на тренувальну і тестову вибірки
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0)
-
-            # Побудова моделі
             model = LogisticRegression()
             model.fit(X_train, y_train)
             y_pred = model.predict(X_test)
-            accuracy = model.score(X_test, y_test)
+            acc = model.score(X_test, y_test)
 
-            # Вивід результатів
-            st.markdown(f"**Точність моделі:** {accuracy:.2%}")
+            st.markdown(f"**Точність моделі:** {acc:.2%}")
             st.markdown("**Матриця помилок:**")
             st.write(confusion_matrix(y_test, y_pred))
 
-            # Звіт
             report = classification_report(y_test, y_pred, output_dict=True)
             st.markdown("**Звіт класифікації:**")
             st.dataframe(pd.DataFrame(report).transpose())
-
         else:
             st.warning("Недостатньо даних для побудови моделі (мінімум 10 рядків).")
     else:
