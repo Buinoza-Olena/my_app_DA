@@ -133,13 +133,13 @@ elif chart_option == "Профіль департаменту (радар)":
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("👥 Загальна кількість", total_employees)
-        st.metric("📌 Кількість проєктів", f"{avg_projects:.2f}")
+        st.metric("📌 Середня кількість проєктів", f"{avg_projects:.2f}")
     with col2:
         st.metric("👋 Звільнилося", left_employees)
         st.metric("⏱ Середні години/міс", f"{avg_hours:.1f}")
     with col3:
         st.metric("📉 Рівень плинності", f"{turnover_rate:.1f}%")
-        st.metric("😊 Задоволеність", f"{avg_satisfaction:.2f}")
+        st.metric("😊 Середня задоволеність", f"{avg_satisfaction:.2f}")
 
 
 
