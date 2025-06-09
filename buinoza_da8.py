@@ -138,9 +138,6 @@ if reg_x_simple != reg_y_simple:
 else:
     st.info("Оберіть різні змінні для X і Y.")
 
-elif chart_option == "Огляд департаменту/ів":
-    st.subheader("Огляд департаменту/ів")
-
    # Розрахунок метрик
     total_employees = len(filtered)
     left_employees = filtered["left"].sum()
