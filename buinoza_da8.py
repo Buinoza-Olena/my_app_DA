@@ -67,12 +67,10 @@ selected_departments = st.sidebar.multiselect(
 
 
 # 2. Вибір кількох рівнів зарплати
-salary_options = sorted(df["salary"].unique())
-selected_salary = st.sidebar.multiselect(
+salary_options = ["Усі"] + sorted(df["salary"].unique())
+selected_salary = st.sidebar.selectbox(
     "Рівень зарплати:",
-    options=salary_options,
-    default=salary_options,
-    help="Обери один або кілька рівнів зарплати"
+    options=salary_options
 )
 
 
@@ -113,7 +111,8 @@ st.sidebar.markdown("👩‍💻 **Автор**: Буйноза Олена :)")
 df_filtered = df[
     (df["Department"].isin(selected_departments))
  &
-    (df["salary"].isin(selected_salary)) &
+    (True if selected_salary == "Усі" else df["salary"] == selected_salary)
+ &
     (
         (status_filter == "Усі") |
         ((status_filter == "Працює") & (df["left"] == 0)) |
