@@ -10,6 +10,7 @@ Original file is located at
 
 <center><b> Створення дашборду за допомогою Streamlit </font>
 """
+# -*- coding: utf-8 -*-
 
 import streamlit as st
 import pandas as pd
@@ -57,14 +58,6 @@ selected_salary = st.sidebar.selectbox("Рівень зарплати:", salary_
 
 status_filter = st.sidebar.radio("Статус працівника:", ["Усі", "Працює", "Звільнився"])
 
-(
-    (status_filter == "Усі") |
-    ((status_filter == "Працює") & (df["left"] == 0)) |
-    ((status_filter == "Звільнився") & (df["left"] == 1))
-)
-
-
-
 filter_accident_free = st.sidebar.checkbox("🩺 Лише без нещасних випадків")
 
 max_years = int(df["time_spend_company"].max())
@@ -81,13 +74,17 @@ chart_option = st.sidebar.radio(
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("**Інструкція:** \nОберіть фільтри, щоб переглянути статистику департаменту та ймовірність звільнення працівників.")
-st.sidebar.markdown("👩‍💻 **Автор**: Буйноза Олена :)")
+st.sidebar.markdown("👩‍💻 **Автор**: Буйноза Олена")
 
 # Фільтрація
 filtered = df[
     df["Department"].isin(selected_departments) &
     ((df["salary"] == selected_salary) if selected_salary != "Усі" else True) &
-    (df["left"].isin([0 if s == "Працює" else 1 for s in status_filter])) &
+    (
+        (status_filter == "Усі") |
+        ((status_filter == "Працює") & (df["left"] == 0)) |
+        ((status_filter == "Звільнився") & (df["left"] == 1))
+    ) &
     ((df["Work_accident"] == 0) if filter_accident_free else True) &
     (df["time_spend_company"] <= selected_years)
 ]
