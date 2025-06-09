@@ -108,13 +108,23 @@ else:
 
 # Графіки
 if chart_option == "Залежність змінних (scatter + тренд)":
-    st.subheader("📊 Залежність між двома змінними")
-    x = st.selectbox("Оберіть змінну для осі X:", filtered.select_dtypes(include=np.number).columns)
-    y = st.selectbox("Оберіть змінну для осі Y:", filtered.select_dtypes(include=np.number).columns)
-    fig = px.scatter(filtered, x=x, y=y, color=filtered["left"].map({0: "Працює", 1: "Звільнився"}))
-    fig.update_traces(marker=dict(size=8))
-    fig.update_layout(title=f"Залежність {y} від {x}", legend_title="Статус")
-    st.plotly_chart(fig, use_container_width=True)
+    st.subheader("📊 Залежність між змінними")
+    
+    x = st.selectbox("Оберіть змінну X:", filtered.select_dtypes(include=np.number).columns)
+    y = st.selectbox("Оберіть змінну Y:", filtered.select_dtypes(include=np.number).columns)
+
+    df_reg = filtered[[x, y]].dropna()
+
+    if len(df_reg) >= 2:
+        from sklearn.linear_model import LinearRegression
+
+        model = LinearRegression()
+        model.fit(df_reg[[x]], df_reg[y])
+        y_pred = model.predict(df_reg[[x]])
+
+        fig = px.scatter(df_reg, x=x, y=y, title=f"Залежність: {y} ~ {x}")
+        fig.add_scatter(x=df_reg[x], y=y_pred, mode='lines', name='Регресія', line=dict(color='red'))
+        st.plotly_chart(fig, use_container_width=True)
 
 elif chart_option == "Огляд департаменту/ів":
     st.subheader("Огляд департаменту/ів")
