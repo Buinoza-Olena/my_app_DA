@@ -55,9 +55,8 @@ selected_departments = st.sidebar.multiselect(
 salary_options = ["Усі"] + sorted(df["salary"].unique())
 selected_salary = st.sidebar.selectbox("Рівень зарплати:", salary_options)
 
-status_filter = st.sidebar.radio(
-    "Статус працівника:",
-    ["Усі", "Працює", "Звільнився"]
+status_filter = st.sidebar.radio("Статус працівника:", ["Усі", "Працює", "Звільнився"])
+
 (
     (status_filter == "Усі") |
     ((status_filter == "Працює") & (df["left"] == 0)) |
