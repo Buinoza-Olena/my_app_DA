@@ -193,18 +193,26 @@ elif chart_option == "Профіль департаменту (радар)":
     st.subheader("📊 Профіль департаменту")
 
     radar_metrics = ["satisfaction_level", "last_evaluation", "average_monthly_hours", "time_spend_company"]
-    dept_data = df_filtered[radar_metrics].mean().values.tolist()
-    overall_data = df[radar_metrics].mean().values.tolist()
+    dept_data = df_filtered[radar_metrics].mean()
+    overall_data = df[radar_metrics].mean()
 
+    # Об'єднання у довгий формат
     radar_df = pd.DataFrame({
-        "Метрика": radar_metrics,
-        "Департамент": dept_data,
-        "Загалом": overall_data
+        "Метрика": radar_metrics * 2,
+        "Значення": list(dept_data) + list(overall_data),
+        "Група": ["Департамент"] * len(radar_metrics) + ["Загалом"] * len(radar_metrics)
     })
 
-    fig = px.line_polar(radar_df, r="Департамент", theta="Метрика", line_close=True, name="Департамент")
-    fig.add_scatterpolar(r=radar_df["Загалом"], theta=radar_df["Метрика"], mode="lines", name="Загалом")
+    fig = px.line_polar(
+        radar_df,
+        r="Значення",
+        theta="Метрика",
+        color="Група",
+        line_close=True
+    )
+
     st.plotly_chart(fig, use_container_width=True)
+
 
 elif chart_option == "Середній показник по роках у компанії":
     st.subheader("📈 Середній показник по стажу (роках у компанії)")
