@@ -117,7 +117,7 @@ if chart_option == "Залежність змінних (scatter + тренд)":
     st.plotly_chart(fig, use_container_width=True)
 
 elif chart_option == "Профіль департаменту (радар)":
-    st.subheader("📊 Профіль департаменту")
+    st.subheader("Профіль департаменту")
 
    # Розрахунок метрик
     total_employees = len(filtered)
