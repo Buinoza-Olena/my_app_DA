@@ -107,25 +107,35 @@ else:
     st.info("Оберіть хоча б один стовпець, щоб побачити таблицю.")
 
 # Графіки
-if chart_option == "Залежність змінних (scatter + тренд)":
-    st.subheader("📊 Залежність між змінними")
+# Блок регресії
+st.sidebar.markdown("📈 Побудова регресії")
+numeric_columns = df_filtered.select_dtypes(include=np.number).columns.tolist()
 
-    x = st.selectbox("Оберіть змінну X:", filtered.select_dtypes(include=np.number).columns)
-    y = st.selectbox("Оберіть змінну Y:", filtered.select_dtypes(include=np.number).columns)
+reg_x = st.sidebar.selectbox("Оберіть змінну X", numeric_columns, index=0)
+reg_y = st.sidebar.selectbox("Оберіть змінну Y", numeric_columns, index=1)
+show_regression = st.sidebar.checkbox("Показати регресійну модель")
 
-    df_reg = filtered[[x, y]].dropna().rename(columns={x: "X", y: "Y"})
+if show_regression:
+    df_reg = df_filtered[[reg_x, reg_y]].dropna()
 
     if len(df_reg) >= 2:
         from sklearn.linear_model import LinearRegression
 
         model = LinearRegression()
-        model.fit(df_reg[["X"]], df_reg["Y"])
-        df_reg["Y_pred"] = model.predict(df_reg[["X"]])
+        model.fit(df_reg[[reg_x]], df_reg[reg_y])
+        y_pred = model.predict(df_reg[[reg_x]])
 
-        fig = px.scatter(df_reg, x="X", y="Y", title=f"Залежність: {y} ~ {x}", labels={"X": x, "Y": y})
-        fig.add_scatter(x=df_reg["X"], y=df_reg["Y_pred"], mode="lines", name="Регресія", line=dict(color="red"))
-
+        import plotly.graph_objects as go
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=df_reg[reg_x], y=df_reg[reg_y],
+                                 mode='markers', name='Дані'))
+        fig.add_trace(go.Scatter(x=df_reg[reg_x], y=y_pred,
+                                 mode='lines', name='Регресія', line=dict(color='red')))
+        fig.update_layout(title=f"Залежність: {reg_y} ~ {reg_x}",
+                          xaxis_title=reg_x, yaxis_title=reg_y)
         st.plotly_chart(fig, use_container_width=True)
+
+
 
 elif chart_option == "Огляд департаменту/ів":
     st.subheader("Огляд департаменту/ів")
