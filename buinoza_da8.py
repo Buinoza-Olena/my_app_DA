@@ -143,11 +143,18 @@ elif chart_option == "Огляд департаменту/ів":
 
 
 
-    # 2. Графік: розподіл середніх годин
-    st.subheader("⏱ Розподіл середніх годин на місяць")
-    fig_hours = px.histogram(filtered, x="average_monthly_hours", nbins=20)
-    fig_hours.update_layout(xaxis_title="Середні години на місяць", yaxis_title="Кількість працівників")
-    st.plotly_chart(fig_hours, use_container_width=True)
+        # Розподіл задоволеності
+    st.subheader("😊 Розподіл рівня задоволеності працівників")
+    fig = px.histogram(
+        filtered,
+        x="satisfaction_level",
+        nbins=20,
+        title="Розподіл задоволеності",
+        labels={"satisfaction_level": "Рівень задоволеності", "count": "Кількість працівників"}
+    )
+    fig.update_layout(bargap=0.1)
+    st.plotly_chart(fig, use_container_width=True)
+
 
 
 elif chart_option == "Розподіл працівників":
