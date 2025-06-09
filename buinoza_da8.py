@@ -67,11 +67,14 @@ selected_departments = st.sidebar.multiselect(
 
 
 # 2. Вибір кількох рівнів зарплати
+salary_options = sorted(df["salary"].unique())
 selected_salary = st.sidebar.multiselect(
     "Рівень зарплати:",
-    options=df["salary"].unique(),
-    default=df["salary"].unique()
+    options=salary_options,
+    default=salary_options,
+    help="Обери один або кілька рівнів зарплати"
 )
+
 
 # 3. Радіо-кнопки: статус працівника
 status_filter = st.sidebar.radio(
