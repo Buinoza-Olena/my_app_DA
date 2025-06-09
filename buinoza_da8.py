@@ -120,11 +120,6 @@ df_filtered = df[
 # Виведемо розмір фільтрованого датасету (опційно)
 st.write(f"📋 Відфільтровано {len(df_filtered)} записів.")
 
-st.subheader("💰 Розподіл працівників за рівнем зарплати")
-salary_counts = df_filtered["salary"].value_counts(normalize=True).reset_index()
-salary_counts.columns = ["Рівень зарплати", "Частка"]
-fig2 = px.pie(salary_counts, values="Частка", names="Рівень зарплати", title="Зарплатні рівні", hole=0.4)
-st.plotly_chart(fig2, use_container_width=True)
 
 # Блок класифікації
 st.sidebar.markdown("🔬 **Побудова моделі класифікації**")
@@ -221,17 +216,18 @@ elif chart_option == "Профіль департаменту (радар)":
 
 
 elif chart_option == "Середній показник по роках у компанії":
-    st.subheader("📈 Середній показник по стажу (роках у компанії)")
+    st.subheader("📊 Розподіл працівників за департаментами")
+    dept_counts = df_filtered["Department"].value_counts(normalize=True).reset_index()
+    dept_counts.columns = ["Департамент", "Частка"]
+    fig1 = px.pie(dept_counts, values="Частка", names="Департамент", title="Частка працівників по департаментах", hole=0.4)
+    st.plotly_chart(fig1, use_container_width=True)
 
-    metric_choice = st.selectbox("Оберіть показник:", [
-        "satisfaction_level", "last_evaluation", "average_monthly_hours", "left"
-    ])
+    st.subheader("💰 Розподіл працівників за рівнем зарплати")
+    salary_counts = df_filtered["salary"].value_counts(normalize=True).reset_index()
+    salary_counts.columns = ["Рівень зарплати", "Частка"]
+    fig2 = px.pie(salary_counts, values="Частка", names="Рівень зарплати", title="Частка працівників по зарплатах", hole=0.4)
+    st.plotly_chart(fig2, use_container_width=True)
 
-    grouped = df_filtered.groupby("time_spend_company")[metric_choice].mean().reset_index()
-    fig = px.line(grouped, x="time_spend_company", y=metric_choice, markers=True,
-                  labels={"time_spend_company": "Роки в компанії", metric_choice: "Середнє значення"},
-                  title=f"{metric_choice} залежно від стажу")
-    st.plotly_chart(fig, use_container_width=True)
 
 # Побудова класифікаційної моделі
 if build_model:
