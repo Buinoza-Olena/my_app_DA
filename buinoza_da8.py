@@ -109,23 +109,23 @@ else:
 # Графіки
 # Блок регресії
 st.sidebar.markdown("📈 Побудова регресії")
-numeric_columns = df_filtered.select_dtypes(include=np.number).columns.tolist()
+numeric_columns = filtered.select_dtypes(include=np.number).columns.tolist()
 
 reg_x = st.sidebar.selectbox("Оберіть змінну X", numeric_columns, index=0)
 reg_y = st.sidebar.selectbox("Оберіть змінну Y", numeric_columns, index=1)
 show_regression = st.sidebar.checkbox("Показати регресійну модель")
 
 if show_regression:
-    df_reg = df_filtered[[reg_x, reg_y]].dropna()
+    df_reg = filtered[[reg_x, reg_y]].dropna()
 
     if len(df_reg) >= 2:
         from sklearn.linear_model import LinearRegression
+        import plotly.graph_objects as go
 
         model = LinearRegression()
         model.fit(df_reg[[reg_x]], df_reg[reg_y])
         y_pred = model.predict(df_reg[[reg_x]])
 
-        import plotly.graph_objects as go
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=df_reg[reg_x], y=df_reg[reg_y],
                                  mode='markers', name='Дані'))
@@ -134,6 +134,7 @@ if show_regression:
         fig.update_layout(title=f"Залежність: {reg_y} ~ {reg_x}",
                           xaxis_title=reg_x, yaxis_title=reg_y)
         st.plotly_chart(fig, use_container_width=True)
+
 
 
 
