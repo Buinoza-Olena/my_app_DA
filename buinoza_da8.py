@@ -119,28 +119,31 @@ if chart_option == "Залежність змінних (scatter + тренд)":
 elif chart_option == "Профіль департаменту (радар)":
     st.subheader("📊 Профіль департаменту")
 
-    # 1. KPI / табло
-    col1, col2, col3, col4 = st.columns(4)
+   # Розрахунок метрик
+total_employees = len(filtered)
+left_employees = filtered["left"].sum()
+turnover_rate = (left_employees / total_employees) * 100 if total_employees else 0
+avg_satisfaction = filtered["satisfaction_level"].mean()
+avg_projects = filtered["number_project"].mean()
+avg_hours = filtered["average_monthly_hours"].mean()
 
-    total = len(filtered)
-    left = filtered["left"].sum()
-    turnover = left / total * 100 if total > 0 else 0
-    satisfaction = filtered["satisfaction_level"].mean()
+# Виведення в колонках
+st.subheader("📊 Основні показники працівників")
 
-    col1.metric("👥 Працівників", total)
-    col2.metric("📤 Звільнено", int(left))
-    col3.metric("📉 Плинність кадрів", f"{turnover:.1f}%")
-    col4.metric("😊 Задоволення", f"{satisfaction:.2f}")
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.metric("👥 Загальна кількість", total_employees)
+    st.metric("📌 Кількість проєктів", f"{avg_projects:.2f}")
+with col2:
+    st.metric("👋 Звільнилося", left_employees)
+    st.metric("⏱ Середні години/міс", f"{avg_hours:.1f}")
+with col3:
+    st.metric("📉 Рівень плинності", f"{turnover_rate:.1f}%")
+    st.metric("😊 Задоволеність", f"{avg_satisfaction:.2f}")
 
-    # 2. Графік: кількість проєктів
-    st.subheader("📌 Розподіл працівників за кількістю проєктів")
-    proj_counts = filtered["number_project"].value_counts().sort_index().reset_index()
-    proj_counts.columns = ["Кількість проєктів", "Працівників"]
-    fig_proj = px.bar(proj_counts, x="Кількість проєктів", y="Працівників", text="Працівників")
-    fig_proj.update_layout(xaxis_title="Кількість проєктів", yaxis_title="Кількість працівників")
-    st.plotly_chart(fig_proj, use_container_width=True)
 
-    # 3. Графік: розподіл середніх годин
+
+    # 2. Графік: розподіл середніх годин
     st.subheader("⏱ Розподіл середніх годин на місяць")
     fig_hours = px.histogram(filtered, x="average_monthly_hours", nbins=20)
     fig_hours.update_layout(xaxis_title="Середні години на місяць", yaxis_title="Кількість працівників")
