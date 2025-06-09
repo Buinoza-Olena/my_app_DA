@@ -56,7 +56,13 @@ salary_options = ["Усі"] + sorted(df["salary"].unique())
 selected_salary = st.sidebar.selectbox("Рівень зарплати:", salary_options)
 
 status_options = ["Працює", "Звільнився"]
-status_filter = st.sidebar.multiselect("Статус працівника:", status_options, default=status_options)
+(
+    (status_filter == "Усі") |
+    ((status_filter == "Працює") & (df["left"] == 0)) |
+    ((status_filter == "Звільнився") & (df["left"] == 1))
+)
+
+
 
 filter_accident_free = st.sidebar.checkbox("🩺 Лише без нещасних випадків")
 
