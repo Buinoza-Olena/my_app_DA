@@ -150,7 +150,7 @@ elif chart_option == "Огляд департаменту/ів":
         x="satisfaction_level",
         nbins=20,
         title="Розподіл задоволеності",
-        labels={"satisfaction_level": "Рівень задоволеності", "count": "Кількість працівників"}
+        labels={"satisfaction_level": "Рівень задоволеності", "к-ть працівників": "Кількість працівників"}
     )
     fig.update_layout(bargap=0.1)
     st.plotly_chart(fig, use_container_width=True)
