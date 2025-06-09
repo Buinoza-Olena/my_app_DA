@@ -115,8 +115,8 @@ else:
     show_regression = st.sidebar.checkbox("Показати регресійну модель")
 
 
-elif chart_option == "Огляд департаменту/ів":
-    st.subheader("Огляд департаменту/ів")
+    elif chart_option == "Огляд департаменту/ів":
+        st.subheader("Огляд департаменту/ів")
 
    # Розрахунок метрик
     total_employees = len(filtered)
