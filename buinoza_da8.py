@@ -107,16 +107,17 @@ else:
     st.info("Оберіть хоча б один стовпець, щоб побачити таблицю.")
 
 # Графіки
-    st.sidebar.markdown("📈 Побудова регресії")
-    numeric_columns = filtered.select_dtypes(include=np.number).columns.tolist()
-    
-    reg_x = st.sidebar.selectbox("Оберіть змінну X", numeric_columns, index=0)
-    reg_y = st.sidebar.selectbox("Оберіть змінну Y", numeric_columns, index=1)
-    show_regression = st.sidebar.checkbox("Показати регресійну модель")
+if chart_option == "Залежність змінних (scatter + тренд)":
+    st.subheader("📊 Залежність між двома змінними")
+    x = st.selectbox("Оберіть змінну для осі X:", filtered.select_dtypes(include=np.number).columns)
+    y = st.selectbox("Оберіть змінну для осі Y:", filtered.select_dtypes(include=np.number).columns)
+    fig = px.scatter(filtered, x=x, y=y, color=filtered["left"].map({0: "Працює", 1: "Звільнився"}))
+    fig.update_traces(marker=dict(size=8))
+    fig.update_layout(title=f"Залежність {y} від {x}", legend_title="Статус")
+    st.plotly_chart(fig, use_container_width=True)
 
-
-    elif chart_option == "Огляд департаменту/ів":
-        st.subheader("Огляд департаменту/ів")
+elif chart_option == "Огляд департаменту/ів":
+    st.subheader("Огляд департаменту/ів")
 
    # Розрахунок метрик
     total_employees = len(filtered)
