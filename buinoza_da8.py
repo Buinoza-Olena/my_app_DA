@@ -106,41 +106,14 @@ else:
     st.info("Оберіть хоча б один стовпець, щоб побачити таблицю.")
 
 # Графіки
-if chart_option == "Залежність змінних (scatter + тренд)":
-    st.subheader("📈 Побудова регресії між двома змінними")
+# Блок регресії
+st.sidebar.markdown("Побудова регресії")
+numeric_columns = filtered.select_dtypes(include=np.number).columns.tolist()
 
-    numeric_columns_reg = filtered.select_dtypes(include=np.number).columns.tolist()
+reg_x = st.sidebar.selectbox("Оберіть змінну X", numeric_columns, index=0)
+reg_y = st.sidebar.selectbox("Оберіть змінну Y", numeric_columns, index=1)
+show_regression = st.sidebar.checkbox("Показати регресійну модель")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        reg_x = st.selectbox("Оберіть змінну X", numeric_columns_reg, key="simple_reg_x")
-    with col2:
-        reg_y = st.selectbox("Оберіть змінну Y", numeric_columns_reg, key="simple_reg_y")
-
-    show_reg = st.checkbox("✅ Показати регресійну модель")
-
-    if show_reg and reg_x != reg_y:
-        df_reg = filtered[[reg_x, reg_y]].dropna()
-
-        if len(df_reg) >= 2:
-            model = LinearRegression()
-            model.fit(df_reg[[reg_x]], df_reg[reg_y])
-            y_pred = model.predict(df_reg[[reg_x]])
-
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(x=df_reg[reg_x], y=df_reg[reg_y],
-                                     mode='markers', name='Дані'))
-            fig.add_trace(go.Scatter(x=df_reg[reg_x], y=y_pred,
-                                     mode='lines', name='Регресія', line=dict(color='red')))
-            fig.update_layout(title=f"Лінійна регресія: {reg_y} ~ {reg_x}",
-                              xaxis_title=reg_x, yaxis_title=reg_y)
-            st.plotly_chart(fig, use_container_width=True)
-
-            st.success(f"R² (коефіцієнт детермінації): {model.score(df_reg[[reg_x]], df_reg[reg_y]):.3f}")
-        else:
-            st.warning("Недостатньо даних для побудови регресії.")
-    elif show_reg:
-        st.info("Оберіть різні змінні X і Y.")
 elif chart_option == "Огляд департаменту/ів":
     st.subheader("Огляд департаменту/ів")
 
