@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
 import altair as alt
+import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
@@ -107,26 +108,27 @@ else:
 # Графіки
 if chart_option == "Графік залежності":
     st.header("🔎 Графік залежності")
-
-    # Підтягуємо тільки числові колонки
-    numeric_columns = filtered.select_dtypes(include=np.number).columns.tolist()
-
-    # Вибір осей
-    x_col = st.selectbox("Оберіть змінну X", numeric_columns, index=0)
-    y_col = st.selectbox("Оберіть змінну Y", numeric_columns, index=1)
-
-    # Показати сам графік
-    if st.checkbox("Показати розсіяння"):
+    numeric_cols = filtered.select_dtypes(include='number').columns.tolist()
+    
+    # Вибір змінних
+    x_col = st.selectbox("Оберіть змінну X", numeric_cols, index=0)
+    y_col = st.selectbox("Оберіть змінну Y", numeric_cols, index=1)
+    
+    if st.button("Побудувати графік"):
+        # Витягуємо дані (позбуваємося пропусків)
         df_plot = filtered[[x_col, y_col]].dropna()
-        if df_plot.empty:
-            st.warning("Немає даних для побудови графіка.")
-        else:
-            fig, ax = plt.subplots(figsize=(8, 5))
-            sns.scatterplot(data=df_plot, x=x_col, y=y_col, ax=ax)
-            ax.set_title(f"Залежність {y_col} від {x_col}")
-            ax.set_xlabel(x_col)
-            ax.set_ylabel(y_col)
-            st.pyplot(fig)
+        x = df_plot[x_col].values
+        y = df_plot[y_col].values
+    
+        # Малюємо графік
+        fig, ax = plt.subplots(figsize=(8, 5))
+        ax.plot(x, y, marker='o', linestyle='-')    # точка + лінія
+        ax.set_xlabel(x_col)
+        ax.set_ylabel(y_col)
+        ax.set_title(f"{y_col} від {x_col}")
+        ax.grid(True)
+
+        st.pyplot(fig)
         
 # Розрахунок метрик
 elif chart_option == "Огляд департаменту/ів":
