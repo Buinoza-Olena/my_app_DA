@@ -17,13 +17,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
-import altair as alt
-import matplotlib.pyplot as plt
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, confusion_matrix
+
 from sklearn.cluster import KMeans  
 from sklearn.preprocessing import StandardScaler  
+
 
 # Завантаження даних
 df = pd.read_csv('HR_comma_sep.csv')
@@ -32,20 +29,19 @@ df.rename(columns={"average_montly_hours": "average_monthly_hours"}, inplace=Tru
 # Налаштування сторінки
 st.set_page_config(
     page_title="HR Insight Dashboard",
-    page_icon="🧠",
+    page_icon="🇭🇷",
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
         'Get Help': 'https://docs.streamlit.io/',
         'Report a bug': 'https://github.com/streamlit/streamlit/issues',
-        'About': 'Інтерактивна панель для аналізу працівників і ризику звільнення'
+        'About': 'Інтерактивна панель для HR-аналітики'
     }
 )
 
 # Бічна панель / SIDEBAR
-st.sidebar.title("Панель фільтрації")
-st.sidebar.markdown("🔍 **Фільтруйте працівників за ключовими ознаками:**")
-st.sidebar.markdown("Цей дашборд допомагає дослідити задоволеність, навантаження та ризики звільнень по департаментах.")
+st.sidebar.title("Фільтри")
+st.sidebar.markdown("Цей дашборд допомагає дослідити HR-статистику по департаментах.")
 
 selected_departments = st.sidebar.multiselect(
     "Оберіть департаменти:",
@@ -58,23 +54,23 @@ selected_salary = st.sidebar.selectbox("Рівень зарплати:", salary_
 
 status_filter = st.sidebar.radio("Статус працівника:", ["Усі", "Працює", "Звільнився"])
 
-filter_accident_free = st.sidebar.checkbox("🩺 Лише без нещасних випадків")
+filter_accident_free = st.sidebar.checkbox("Лише без нещасних випадків")
 
 max_years = int(df["time_spend_company"].max())
-selected_years = st.sidebar.slider("Максимальний стаж (роки в компанії):", 1, max_years, max_years)
+selected_years = st.sidebar.slider("Максимальний стаж:", 1, max_years, max_years)
 
 chart_option = st.sidebar.radio(
     "📊 Оберіть графік для перегляду:",
     [
         "Кореляція",
-        "Огляд департаменту/ів",
+        "Огляд департаментів",
         "Розподіл працівників"
     ]
 )
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("**Інструкція:** \nОберіть фільтри, щоб переглянути статистику департаменту та ймовірність звільнення працівників.")
-st.sidebar.markdown("👩‍💻 **Автор**: Буйноза Олена")
+
+st.sidebar.markdown("**Автор**: Буйноза Олена")
 
 # Фільтрація
 filtered = df[
@@ -89,14 +85,14 @@ filtered = df[
     (df["time_spend_company"] <= selected_years)
 ]
 
-st.title("📊 HR Insight Dashboard")
+st.title("HR Insight Dashboard")
 st.subheader(f"🔍 Відфільтровано {len(filtered)} працівників")
 
 csv = filtered.to_csv(index=False).encode("utf-8")
 st.download_button("⬇️ Завантажити CSV", csv, "filtered_employees.csv", "text/csv")
 
 # Таблиця
-st.subheader("Оберіть, які стовпці таблиці відображати")
+st.subheader("Табличні дані")
 all_columns = filtered.columns.tolist()
 def_columns = ["Department", "salary", "satisfaction_level", "last_evaluation", "average_monthly_hours", "time_spend_company", "left"]
 selected_cols = st.multiselect("Оберіть стовпці для перегляду:", all_columns, default=[c for c in def_columns if c in all_columns])
@@ -123,32 +119,33 @@ if chart_option == "Кореляція":
         sns.heatmap(corr, annot=True, cmap="coolwarm", ax=ax, vmin=-1, vmax=1)
         ax.set_title(f"Кореляція між {x_col} та {y_col}")
         st.pyplot(fig)
+
 # Розрахунок метрик
-elif chart_option == "Огляд департаменту/ів":
-    st.subheader("Огляд департаменту/ів")
+elif chart_option == "Огляд департаментів":
+    st.subheader("Огляд департаментів")
     total_employees = len(filtered)
     left_employees = filtered["left"].sum()
     turnover_rate = (left_employees / total_employees) * 100 if total_employees else 0
     avg_satisfaction = filtered["satisfaction_level"].mean()
     avg_projects = filtered["number_project"].mean()
     avg_hours = filtered["average_monthly_hours"].mean()
-    st.subheader("📊 Основні показники працівників")
+    st.subheader("Основні HR-показники відділу")
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("👥 Загальна кількість", total_employees)
+        st.metric("👥 Загальна кількість працівників", total_employees)
         st.metric("📌 Середня кількість проєктів", f"{avg_projects:.2f}")
     with col2:
-        st.metric("👋 Звільнилося", left_employees)
-        st.metric("⏱ Середні години/міс", f"{avg_hours:.1f}")
+        st.metric("👋 Звільнилося працівників", left_employees)
+        st.metric("⏱ Середня к-ть годин роботи/міс", f"{avg_hours:.1f}")
     with col3:
-        st.metric("📉 Рівень плинності", f"{turnover_rate:.1f}%")
-        st.metric("😊 Середня задоволеність", f"{avg_satisfaction:.2f}")
+        st.metric("📉 Рівень плинності кадрів", f"{turnover_rate:.1f}%")
+        st.metric("😊 Середня задоволеність працівників", f"{avg_satisfaction:.2f}")
 
 
 
         # Розподіл задоволеності
-    st.subheader("😊 Розподіл рівня задоволеності працівників")
+    st.subheader("Розподіл рівня задоволеності працівників")
     fig = px.histogram(
         filtered,
         x="satisfaction_level",
@@ -162,20 +159,20 @@ elif chart_option == "Огляд департаменту/ів":
 
 
 elif chart_option == "Розподіл працівників":
-    st.subheader("📊 Розподіл працівників за департаментами")
+    st.subheader("Розподіл кількості працівників за департаментами")
     dept_share = filtered["Department"].value_counts(normalize=True).reset_index()
     dept_share.columns = ["Департамент", "Частка"]
     fig1 = px.pie(dept_share, values="Частка", names="Департамент", title="Частка по департаментах", hole=0.4)
     st.plotly_chart(fig1, use_container_width=True)
 
-    st.subheader("💰 Розподіл працівників за рівнем зарплати")
+    st.subheader("Розподіл працівників за рівнем зарплати")
     sal_share = filtered["salary"].value_counts(normalize=True).reset_index()
     sal_share.columns = ["Рівень зарплати", "Частка"]
     fig2 = px.pie(sal_share, values="Частка", names="Рівень зарплати", title="Частка по зарплаті", hole=0.4)
     st.plotly_chart(fig2, use_container_width=True)
 
-# Класифікаційна модель
-st.sidebar.markdown("🔷 **Побудова моделі кластеризації**")
+# Кластеризація
+st.sidebar.markdown("**Побудова моделі кластеризації**")
 cluster_features = st.sidebar.multiselect(
     "Оберіть ознаки для кластеризації (X):", 
     options=numeric_cols, 
@@ -201,7 +198,7 @@ if build_cluster_model:
             df_cluster = df_cluster.copy()
             df_cluster["Cluster"] = clusters
             
-            st.subheader("📊 Кластери працівників")
+            st.subheader("Призначені кластери")
             st.dataframe(df_cluster)
             
             if len(cluster_features) >= 2:
