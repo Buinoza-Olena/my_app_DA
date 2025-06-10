@@ -110,22 +110,19 @@ else:
 if chart_option == "Побудова регресії":
     st.sidebar.markdown("Побудова регресії")
     numeric_columns = filtered.select_dtypes(include=np.number).columns.tolist()
-    reg_x = st.sidebar.selectbox("Оберіть змінну X", numeric_columns, index=0)
-    reg_y = st.sidebar.selectbox("Оберіть змінну Y", numeric_columns, index=1)
-    show_regression = st.sidebar.checkbox("Показати регресійну модель")
+    reg_x = st.subheader.selectbox("Оберіть змінну X", numeric_columns, index=0)
+    reg_y = st.subheader.selectbox("Оберіть змінну Y", numeric_columns, index=1)
+    show_regression = st.subheader.checkbox("Показати регресійну модель")
 
+# Розрахунок метрик
 elif chart_option == "Огляд департаменту/ів":
     st.subheader("Огляд департаменту/ів")
-
-   # Розрахунок метрик
     total_employees = len(filtered)
     left_employees = filtered["left"].sum()
     turnover_rate = (left_employees / total_employees) * 100 if total_employees else 0
     avg_satisfaction = filtered["satisfaction_level"].mean()
     avg_projects = filtered["number_project"].mean()
     avg_hours = filtered["average_monthly_hours"].mean()
-    
-    # Виведення в колонках
     st.subheader("📊 Основні показники працівників")
     
     col1, col2, col3 = st.columns(3)
