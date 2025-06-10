@@ -22,6 +22,8 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.cluster import KMeans  
+from sklearn.preprocessing import StandardScaler  
 
 # Завантаження даних
 df = pd.read_csv('HR_comma_sep.csv')
@@ -173,36 +175,49 @@ elif chart_option == "Розподіл працівників":
     st.plotly_chart(fig2, use_container_width=True)
 
 # Класифікаційна модель
-st.sidebar.markdown("🔬 **Побудова моделі класифікації**")
-st.sidebar.markdown("Оберіть ознаки, за якими модель прогнозуватиме, чи працівник звільниться.")
+st.sidebar.markdown("🔷 **Побудова моделі кластеризації**")
+cluster_features = st.sidebar.multiselect(
+    "Оберіть ознаки для кластеризації (X):", 
+    options=numeric_cols, 
+    default=["satisfaction_level", "last_evaluation"]
+)
+n_clusters = st.sidebar.slider("Кількість кластерів (K):", 2, 10, 3)
 
-numeric_cols = filtered.select_dtypes(include=np.number).columns.tolist()
-if "left" in numeric_cols:
-    numeric_cols.remove("left")
-selected_features = st.sidebar.multiselect("Ознаки для моделі (X):", options=numeric_cols, default=["satisfaction_level", "last_evaluation"])
-build_model = st.sidebar.checkbox("🔍 Побудувати модель класифікації")
+build_cluster_model = st.sidebar.checkbox("🔍 Побудувати модель кластеризації")
 
-if build_model:
-    st.subheader("🔍 Класифікація: прогноз ймовірності звільнення")
-    if selected_features and "left" in filtered.columns:
-        df_model = filtered[selected_features + ["left"]].dropna()
-        if len(df_model) >= 10:
-            X = df_model[selected_features]
-            y = df_model["left"]
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0)
-            model = LogisticRegression()
-            model.fit(X_train, y_train)
-            y_pred = model.predict(X_test)
-            acc = model.score(X_test, y_test)
-
-            st.markdown(f"**Точність моделі:** {acc:.2%}")
-            st.markdown("**Матриця помилок:**")
-            st.write(confusion_matrix(y_test, y_pred))
-
-            report = classification_report(y_test, y_pred, output_dict=True)
-            st.markdown("**Звіт класифікації:**")
-            st.dataframe(pd.DataFrame(report).transpose())
+if build_cluster_model:
+    if cluster_features and len(filtered) >= 10:
+        df_cluster = filtered[cluster_features].dropna()
+        
+        if len(df_cluster) < 10:
+            st.warning("Недостатньо даних для кластеризації (мінімум 10 рядків).")
         else:
-            st.warning("Недостатньо даних для побудови моделі (мінімум 10 рядків).")
+            scaler = StandardScaler()
+            X_scaled = scaler.fit_transform(df_cluster)
+            
+            kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+            clusters = kmeans.fit_predict(X_scaled)
+            
+            df_cluster = df_cluster.copy()
+            df_cluster["Cluster"] = clusters
+            
+            st.subheader("📊 Кластери працівників")
+            st.dataframe(df_cluster)
+            
+            if len(cluster_features) >= 2:
+                fig, ax = plt.subplots(figsize=(8, 5))
+                scatter = ax.scatter(
+                    df_cluster[cluster_features[0]], 
+                    df_cluster[cluster_features[1]], 
+                    c=clusters, cmap='Set2', alpha=0.7
+                )
+                ax.set_xlabel(cluster_features[0])
+                ax.set_ylabel(cluster_features[1])
+                ax.set_title("Кластери на основі обраних ознак")
+                legend1 = ax.legend(*scatter.legend_elements(), title="Кластери")
+                ax.add_artist(legend1)
+                st.pyplot(fig)
+            else:
+                st.info("Для візуалізації кластерів потрібно обрати мінімум 2 ознаки.")
     else:
-        st.warning("Оберіть хоча б одну ознаку для побудови моделі.")
+        st.warning("Оберіть принаймні одну ознаку для кластеризації та переконайтеся, що фільтр не пустий.")
