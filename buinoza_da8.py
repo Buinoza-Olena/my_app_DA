@@ -64,13 +64,7 @@ chart_option = st.sidebar.radio(
     [
         "Кореляція",
         "Огляд департаментів",
-        "Розподіл працівників"
-    ]
-)
-
-st.sidebar.markdown("---")
-
-st.sidebar.markdown("**Автор**: Буйноза Олена")
+        "Розподіл працівників"])
 
 # Фільтрація
 filtered = df[
@@ -174,7 +168,7 @@ elif chart_option == "Розподіл працівників":
 # Кластеризація
 st.sidebar.markdown("**Побудова моделі кластеризації**")
 cluster_features = st.sidebar.multiselect(
-    "Оберіть ознаки для кластеризації (X):", 
+    "Оберіть ознаки для кластеризації:", 
     options=numeric_cols, 
     default=["satisfaction_level", "last_evaluation"]
 )
@@ -218,3 +212,6 @@ if build_cluster_model:
                 st.info("Для візуалізації кластерів потрібно обрати мінімум 2 ознаки.")
     else:
         st.warning("Оберіть принаймні одну ознаку для кластеризації та переконайтеся, що фільтр не пустий.")
+st.sidebar.markdown("---")
+
+st.sidebar.markdown("**Автор**: Буйноза Олена")
