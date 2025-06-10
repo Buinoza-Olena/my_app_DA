@@ -65,7 +65,7 @@ selected_years = st.sidebar.slider("Максимальний стаж (роки 
 chart_option = st.sidebar.radio(
     "📊 Оберіть графік для перегляду:",
     [
-        "Залежність змінних (scatter + тренд)",
+        "Побудова регресії",
         "Огляд департаменту/ів",
         "Розподіл працівників"
     ]
@@ -107,12 +107,13 @@ else:
 
 # Графіки
 # Блок регресії
-st.sidebar.markdown("Побудова регресії")
-numeric_columns = filtered.select_dtypes(include=np.number).columns.tolist()
-
-reg_x = st.sidebar.selectbox("Оберіть змінну X", numeric_columns, index=0)
-reg_y = st.sidebar.selectbox("Оберіть змінну Y", numeric_columns, index=1)
-show_regression = st.sidebar.checkbox("Показати регресійну модель")
+if chart_option == "Побудова регресії":
+    st.sidebar.markdown("Побудова регресії")
+    numeric_columns = filtered.select_dtypes(include=np.number).columns.tolist()
+    
+    reg_x = st.sidebar.selectbox("Оберіть змінну X", numeric_columns, index=0)
+    reg_y = st.sidebar.selectbox("Оберіть змінну Y", numeric_columns, index=1)
+    show_regression = st.sidebar.checkbox("Показати регресійну модель")
 
 elif chart_option == "Огляд департаменту/ів":
     st.subheader("Огляд департаменту/ів")
