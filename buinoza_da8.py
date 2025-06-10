@@ -65,7 +65,7 @@ selected_years = st.sidebar.slider("Максимальний стаж (роки 
 chart_option = st.sidebar.radio(
     "📊 Оберіть графік для перегляду:",
     [
-        "Графік залежності",
+        "Кореляція",
         "Огляд департаменту/ів",
         "Розподіл працівників"
     ]
@@ -106,30 +106,22 @@ else:
     st.info("Оберіть хоча б один стовпець, щоб побачити таблицю.")
 
 # Графіки
-if chart_option == "Графік залежності":
-    st.header("🔎 Графік залежності")
+if chart_option == "Кореляція":
+    st.header("🔎 Heatmap кореляції")
     numeric_cols = filtered.select_dtypes(include='number').columns.tolist()
     
-    # Вибір змінних
     x_col = st.selectbox("Оберіть змінну X", numeric_cols, index=0)
     y_col = st.selectbox("Оберіть змінну Y", numeric_cols, index=1)
     
     if st.button("Побудувати графік"):
-        # Витягуємо дані (позбуваємося пропусків)
         df_plot = filtered[[x_col, y_col]].dropna()
-        x = df_plot[x_col].values
-        y = df_plot[y_col].values
-    
-        # Малюємо графік
-        fig, ax = plt.subplots(figsize=(8, 5))
-        ax.plot(x, y, marker='o', linestyle='-')    # точка + лінія
-        ax.set_xlabel(x_col)
-        ax.set_ylabel(y_col)
-        ax.set_title(f"{y_col} від {x_col}")
-        ax.grid(True)
-
-        st.pyplot(fig)
         
+        corr = df_plot.corr()
+        
+        fig, ax = plt.subplots(figsize=(5, 4))
+        sns.heatmap(corr, annot=True, cmap="coolwarm", ax=ax, vmin=-1, vmax=1)
+        ax.set_title(f"Кореляція між {x_col} та {y_col}")
+        st.pyplot(fig)
 # Розрахунок метрик
 elif chart_option == "Огляд департаменту/ів":
     st.subheader("Огляд департаменту/ів")
