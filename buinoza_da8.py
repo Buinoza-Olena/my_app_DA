@@ -20,7 +20,7 @@ import seaborn as sns
 import plotly.express as px
 import altair as alt
 
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
 
