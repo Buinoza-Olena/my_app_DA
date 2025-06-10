@@ -107,9 +107,9 @@ else:
     st.info("Оберіть хоча б один стовпець, щоб побачити таблицю.")
 
 # Графіки
+numeric_cols = filtered.select_dtypes(include='number').columns.tolist()
 if chart_option == "Кореляція":
     st.header("🔎 Heatmap кореляції")
-    numeric_cols = filtered.select_dtypes(include='number').columns.tolist()
     
     x_col = st.selectbox("Оберіть змінну X", numeric_cols, index=0)
     y_col = st.selectbox("Оберіть змінну Y", numeric_cols, index=1)
