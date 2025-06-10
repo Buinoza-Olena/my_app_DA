@@ -107,39 +107,38 @@ else:
 
 # Графіки
 # Блок регресії
-st.sidebar.markdown("Побудова регресії")
-numeric_columns = filtered.select_dtypes(include=np.number).columns.tolist()
-
-reg_x = st.selectbox("Оберіть змінну X", numeric_columns, index=0)
-reg_y = st.selectbox("Оберіть змінну Y", numeric_columns, index=1)
-show_regression = st.checkbox("Показати регресійну модель")
-
-# Побудова регресійної моделі
-if show_regression:
-    st.subheader(f"📈 Лінійна регресія: {reg_y} ~ {reg_x}")
-
-    df_reg = filtered[[reg_x, reg_y]].dropna()
-
-    if df_reg.shape[0] >= 2:
-        model = LinearRegression()
-        model.fit(df_reg[[reg_x]], df_reg[reg_y])
-        y_pred = model.predict(df_reg[[reg_x]])
-
-        coef = model.coef_[0]
-        intercept = model.intercept_
-        r2 = model.score(df_reg[[reg_x]], df_reg[reg_y])
-
-        st.markdown(f"**Коефіцієнт нахилу (β):** {coef:.4f}")
-        st.markdown(f"**Зсув (intercept):** {intercept:.4f}")
-        st.markdown(f"**R²:** {r2:.4f}")
-
-        fig, ax = plt.subplots(figsize=(8, 5))
-        sns.scatterplot(data=df_reg, x=reg_x, y=reg_y, ax=ax)
-        sns.lineplot(x=df_reg[reg_x], y=y_pred, color='red', ax=ax)
-        ax.set_title(f"Регресія {reg_y} ~ {reg_x}")
-        st.pyplot(fig)
-    else:
-        st.warning("Недостатньо даних для побудови регресії.")
+if chart_option == "Побудова регресії":
+    st.header("📈 Побудова лінійної регресії")
+    numeric_columns = filtered.select_dtypes(include=np.number).columns.tolist()
+    
+    # вибір змінних на головному екрані
+    reg_x = st.selectbox("Оберіть змінну X", numeric_columns, index=0)
+    reg_y = st.selectbox("Оберіть змінну Y", numeric_columns, index=1)
+    show_model = st.checkbox("Показати регресійну модель")
+    
+    if show_model:
+        # готуємо датафрейм для регресії
+        df_reg = filtered[[reg_x, reg_y]].dropna()
+        
+        if df_reg.shape[0] < 2:
+            st.warning("Недостатньо точок для побудови регресії.")
+        else:
+            # 3) будуємо модель
+            model = LinearRegression()
+            model.fit(df_reg[[reg_x]], df_reg[reg_y])
+            y_pred = model.predict(df_reg[[reg_x]])
+            
+            # вивід коефіцієнтів
+            st.markdown(f"**Коефіцієнт нахилу (β):** {model.coef_[0]:.4f}")
+            st.markdown(f"**Зсув (intercept):** {model.intercept_:.4f}")
+            st.markdown(f"**R²:** {model.score(df_reg[[reg_x]], df_reg[reg_y]):.4f}")
+            
+            # 4) малюємо scatter + лінію прогнозу
+            fig, ax = plt.subplots(figsize=(8, 5))
+            sns.scatterplot(data=df_reg, x=reg_x, y=reg_y, ax=ax)
+            sns.lineplot(x=df_reg[reg_x], y=y_pred, ax=ax)
+            ax.set_title(f"Регресія: {reg_y} ~ {reg_x}")
+            st.pyplot(fig)
         
 # Розрахунок метрик
 elif chart_option == "Огляд департаменту/ів":
