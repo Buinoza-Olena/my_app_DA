@@ -108,11 +108,22 @@ else:
 # Графіки
 # Блок регресії
 if chart_option == "Побудова регресії":
-    st.sidebar.markdown("Побудова регресії")
+    st.markdown("### Побудова регресії")
+
     numeric_columns = filtered.select_dtypes(include=np.number).columns.tolist()
-    reg_x = st.subheader.selectbox("Оберіть змінну X", numeric_columns, index=0)
-    reg_y = st.subheader.selectbox("Оберіть змінну Y", numeric_columns, index=1)
-    show_regression = st.subheader.checkbox("Показати регресійну модель")
+
+    # Вибір змінних у основній частині
+    reg_x = st.selectbox("Оберіть змінну X", numeric_columns, index=0)
+    reg_y = st.selectbox("Оберіть змінну Y", numeric_columns, index=1)
+
+    show_regression = st.checkbox("Показати регресійну модель")
+
+    # Якщо вибрано показати регресію - малюємо графік
+    if show_regression:
+        fig, ax = plt.subplots()
+        sns.regplot(x=filtered[reg_x], y=filtered[reg_y], ax=ax)
+        ax.set_title(f"Регресія: {reg_y} від {reg_x}")
+        st.pyplot(fig)
 
 # Розрахунок метрик
 elif chart_option == "Огляд департаменту/ів":
