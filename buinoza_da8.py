@@ -112,19 +112,26 @@ if chart_option == "Побудова регресії":
 
     numeric_columns = filtered.select_dtypes(include=np.number).columns.tolist()
 
-    # Вибір змінних у основній частині
-    reg_x = st.selectbox("Оберіть змінну X", numeric_columns, index=0)
-    reg_y = st.selectbox("Оберіть змінну Y", numeric_columns, index=1)
+    if len(numeric_columns) < 2:
+        st.warning("Потрібно принаймні дві числові змінні для побудови регресії.")
+    else:
+        reg_x = st.selectbox("Оберіть змінну X", numeric_columns, index=0)
+        reg_y = st.selectbox("Оберіть змінну Y", numeric_columns, index=1)
 
-    show_regression = st.checkbox("Показати регресійну модель")
+        show_regression = st.checkbox("Показати регресійну модель")
 
-    # Якщо вибрано показати регресію - малюємо графік
-    if show_regression:
-        fig, ax = plt.subplots()
-        sns.regplot(x=filtered[reg_x], y=filtered[reg_y], ax=ax)
-        ax.set_title(f"Регресія: {reg_y} від {reg_x}")
-        st.pyplot(fig)
-
+        if show_regression:
+            # Витягуємо дані без пропусків для цих змінних
+            data_reg = filtered[[reg_x, reg_y]].dropna()
+            if data_reg.shape[0] < 2:
+                st.warning("Недостатньо даних для побудови регресії.")
+            else:
+                import seaborn as sns
+                import matplotlib.pyplot as plt
+                fig, ax = plt.subplots()
+                sns.regplot(x=data_reg[reg_x], y=data_reg[reg_y], ax=ax)
+                ax.set_title(f"Регресія: {reg_y} від {reg_x}")
+                st.pyplot(fig)
 # Розрахунок метрик
 elif chart_option == "Огляд департаменту/ів":
     st.subheader("Огляд департаменту/ів")
