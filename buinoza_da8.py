@@ -107,31 +107,40 @@ else:
 
 # Графіки
 # Блок регресії
-if chart_option == "Побудова регресії":
-    st.markdown("### Побудова регресії")
+st.sidebar.markdown("Побудова регресії")
+numeric_columns = filtered.select_dtypes(include=np.number).columns.tolist()
 
-    numeric_columns = filtered.select_dtypes(include=np.number).columns.tolist()
+reg_x = st.selectbox("Оберіть змінну X", numeric_columns, index=0)
+reg_y = st.selectbox("Оберіть змінну Y", numeric_columns, index=1)
+show_regression = st.checkbox("Показати регресійну модель")
 
-    if len(numeric_columns) < 2:
-        st.warning("Потрібно принаймні дві числові змінні для побудови регресії.")
+# Побудова регресійної моделі
+if show_regression:
+    st.subheader(f"📈 Лінійна регресія: {reg_y} ~ {reg_x}")
+
+    df_reg = filtered[[reg_x, reg_y]].dropna()
+
+    if df_reg.shape[0] >= 2:
+        model = LinearRegression()
+        model.fit(df_reg[[reg_x]], df_reg[reg_y])
+        y_pred = model.predict(df_reg[[reg_x]])
+
+        coef = model.coef_[0]
+        intercept = model.intercept_
+        r2 = model.score(df_reg[[reg_x]], df_reg[reg_y])
+
+        st.markdown(f"**Коефіцієнт нахилу (β):** {coef:.4f}")
+        st.markdown(f"**Зсув (intercept):** {intercept:.4f}")
+        st.markdown(f"**R²:** {r2:.4f}")
+
+        fig, ax = plt.subplots(figsize=(8, 5))
+        sns.scatterplot(data=df_reg, x=reg_x, y=reg_y, ax=ax)
+        sns.lineplot(x=df_reg[reg_x], y=y_pred, color='red', ax=ax)
+        ax.set_title(f"Регресія {reg_y} ~ {reg_x}")
+        st.pyplot(fig)
     else:
-        reg_x = st.selectbox("Оберіть змінну X", numeric_columns, index=0)
-        reg_y = st.selectbox("Оберіть змінну Y", numeric_columns, index=1)
-
-        show_regression = st.checkbox("Показати регресійну модель")
-
-        if show_regression:
-            # Витягуємо дані без пропусків для цих змінних
-            data_reg = filtered[[reg_x, reg_y]].dropna()
-            if data_reg.shape[0] < 2:
-                st.warning("Недостатньо даних для побудови регресії.")
-            else:
-                import seaborn as sns
-                import matplotlib.pyplot as plt
-                fig, ax = plt.subplots()
-                sns.regplot(x=data_reg[reg_x], y=data_reg[reg_y], ax=ax)
-                ax.set_title(f"Регресія: {reg_y} від {reg_x}")
-                st.pyplot(fig)
+        st.warning("Недостатньо даних для побудови регресії.")
+        
 # Розрахунок метрик
 elif chart_option == "Огляд департаменту/ів":
     st.subheader("Огляд департаменту/ів")
